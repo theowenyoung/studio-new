@@ -1,0 +1,39 @@
+---
+- name: Init VPS
+  hosts: all
+  gather_facts: yes
+  
+  pre_tasks:
+    - name: Wait for system to be ready
+      include_tasks: ../tasks/wait-for-connection.yml
+  
+  roles:
+    # 基础系统
+    - role: robertdebock.bootstrap
+      tags: [bootstrap]
+    
+    - role: robertdebock.update
+      tags: [update]
+    
+    # 用户管理
+    - role: robertdebock.users
+      tags: [users]
+    
+    # 基础工具
+    - role: geerlingguy.git
+      tags: [git]
+    
+    - role: geerlingguy.pip
+      tags: [pip]
+    
+    - role: geerlingguy.docker
+      tags: [docker]
+  
+  post_tasks:
+    # 安装用户定义的基础包
+    - name: Install common packages
+      package:
+        name: "{{ common_packages }}"
+        state: present
+      when: common_packages is defined
+      tags: [packages, common]
