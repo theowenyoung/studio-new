@@ -1,0 +1,13 @@
+[tools]
+python = "latest"
+zig = "latest"
+bun = "latest"
+
+[env]
+# AWS ECR registry
+ECR_REGISTRY = "912951144733.dkr.ecr.us-west-2.amazonaws.com"
+
+[tasks]
+
+"dev" = "pnpm --filter \"./js-apps/*\" dev"
+"build" = "pnpm --filter \"./js-apps/*\" build"

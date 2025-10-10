@@ -4,18 +4,19 @@
   "scripts": {
     "build": "turbo run build",
     "clean": "turbo run clean",
-    "dev": "turbo run dev",
+    "dev": "pnpm --filter \"./js-apps/*\" dev",
+    "dev:blog": "pnpm --filter blog dev",
+    "dev:app2": "pnpm --filter web-app-2 dev",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "turbo run lint",
     "test": "turbo run test",
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
-    "prettier": "^3.6.0",
-    "turbo": "^2.5.8"
+    "prettier": "^3.6.0"
   },
   "packageManager": "pnpm@8.15.6",
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   }
 }
