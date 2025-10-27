@@ -1,13 +1,7 @@
 {
-  "name": "kitchen-sink",
+  "name": "studio",
   "private": true,
   "scripts": {
-    "build": "pnpm --filter \"./js-apps/*\" build",
-    "clean": "pnpm --filter \"./js-apps/*\" clean",
-    "dev": "pnpm --filter \"./js-apps/*\" dev",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "lint": "pnpm --filter \"./js-apps/*\" lint",
-    "test": "pnpm --filter \"./js-apps/*\" test"
   },
   "devDependencies": {
     "prettier": "^3.6.0"

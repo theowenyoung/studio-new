@@ -10,8 +10,7 @@ export default function Index() {
       </h1>
       <CounterButton />
       <p className="description">
-        Built With <Link href="https://turborepo.com">Turborepo</Link>
-        {" & "}
+        Built With Studio {" & "}
         <Link href="https://remix.run/">Remix</Link>
       </p>
     </div>

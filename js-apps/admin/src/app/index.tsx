@@ -11,11 +11,7 @@ function App() {
       </h1>
       <CounterButton />
       <p className="description">
-        Built With{" "}
-        <Link href="https://turborepo.com" newTab>
-          Turborepo
-        </Link>
-        {" & "}
+        Built With Studio {" & "}
         <Link href="https://vitejs.dev/" newTab>
           Vite
         </Link>
