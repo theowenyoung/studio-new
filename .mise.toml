@@ -8,6 +8,9 @@ bun = "latest"
 ECR_REGISTRY = "912951144733.dkr.ecr.us-west-2.amazonaws.com"
 
 [tasks]
-
-"dev" = "pnpm --filter \"./js-apps/*\" dev"
-"build" = "pnpm --filter \"./js-apps/*\" build"
+build = 'pnpm --filter "./js-apps/*" build'
+clean = 'pnpm --filter "./js-apps/*" clean'
+dev = 'pnpm --filter "./js-apps/*" dev'
+format = 'prettier --write "**/*.{ts,tsx,md}"'
+lint = 'pnpm --filter "./js-apps/*" lint'
+test = 'pnpm --filter "./js-apps/*" test'
