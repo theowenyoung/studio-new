@@ -1,13 +1,22 @@
+
+experimental_monorepo_root = true
+[settings]
+task.monorepo_depth = 3  # Only search 2 levels deep
 [tools]
 python = "latest"
 zig = "latest"
 bun = "latest"
+node = "latest"
 
 [env]
 # AWS ECR registry
 ECR_REGISTRY = "912951144733.dkr.ecr.us-west-2.amazonaws.com"
 
 [tasks]
+# 初始化
+init = 'docker network create shared'
+# 启动各种后台服务, 如 postgres, caddy, redis
+up = 'mise //infra-apps/postgres:up'
 build = 'pnpm --filter "./js-apps/*" build'
 clean = 'pnpm --filter "./js-apps/*" clean'
 dev = 'pnpm --filter "./js-apps/*" dev'

@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+
+    # Environment variables from .env
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: postgres
+    # Production-grade port configuration
+    ports:
+      - "5432:5432"
+
+    # Data persistence and initialization
+    # 生产环境需要改变
+    volumes:
+      - ./initdb.d:/docker-entrypoint-initdb.d:ro
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./.local/data:/var/lib/postgresql/data
+      - ./.local/backups:/backups
+
+    # Production-grade healthcheck
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    # Use custom configuration file
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+
+    # Network configuration
+    networks:
+      - shared
+networks:
+  shared:
+    driver: bridge
+    external: true

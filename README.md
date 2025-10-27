@@ -28,11 +28,13 @@ mkcert -cert-file infra-apps/caddy/.local/certs/_wildcard.studio.localhost.pem \
        -key-file infra-apps/caddy/.local/certs/_wildcard.studio.localhost-key.pem \
        "*.studio.localhost"
 
-# 启动 service，比如postgres,redis, caddy
-make service
+# 创建共享网络
+docker network create shared
 
-# 启动你的应用
+# 启动 service，比如postgres, redis, caddy
+make up
 
-make devxxx
+# 启动所有应用
+make dev
 ```
 
