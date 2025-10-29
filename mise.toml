@@ -1,4 +1,3 @@
-
 experimental_monorepo_root = true
 [settings]
 task.monorepo_depth = 3  # Only search 2 levels deep
@@ -14,12 +13,23 @@ ECR_REGISTRY = "912951144733.dkr.ecr.us-west-2.amazonaws.com"
 
 [tasks]
 # 初始化
-init = 'docker network create shared'
-# 启动各种后台服务, 如 postgres, caddy, redis
-up = 'mise //infra-apps/postgres:up'
 build = 'pnpm --filter "./js-apps/*" build'
 clean = 'pnpm --filter "./js-apps/*" clean'
 dev = 'pnpm --filter "./js-apps/*" dev'
 format = 'prettier --write "**/*.{ts,tsx,md}"'
 lint = 'pnpm --filter "./js-apps/*" lint'
 test = 'pnpm --filter "./js-apps/*" test'
+"init:network" = 'docker network create shared'
+"up:postgres" = 'cd infra-apps/postgres && docker compose up'
+"down:postgres" = 'cd infra-apps/postgres && docker compose down'
+"up:caddy" = 'cd infra-apps/caddy && docker compose up'
+"down:caddy" = 'cd infra-apps/caddy && docker compose down'
+
+[tasks.init]
+depends = ["init:network"]
+
+[tasks.up]
+depends = ["up:postgres", "up:caddy"]
+
+[tasks.down]
+depends = ["down:postgres", "down:caddy"]

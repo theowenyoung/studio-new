@@ -109,24 +109,8 @@ All PostgreSQL performance and behavior settings are managed in `postgresql.conf
 
 ## Initialization Scripts
 
-Scripts in `init-scripts/` run automatically on first startup:
+Scripts in `initdb.d/` run automatically on first startup:
 
-1. **01-extensions.sql**: Installs commonly used PostgreSQL extensions
-   - uuid-ossp (UUID generation)
-   - pg_trgm (fuzzy text search)
-   - citext (case-insensitive text)
-   - pgcrypto (encryption functions)
-   - pg_stat_statements (query statistics)
-
-2. **02-roles.sql**: Creates application-level roles
-   - `app_readwrite`: Read-write access to tables
-   - `app_readonly`: Read-only access
-   - `app_user`: Application user with readwrite privileges
-
-3. **03-schema.sql**: Sets up base schema
-   - Timezone configuration (UTC)
-   - `trigger_set_timestamp()` function for auto-updating timestamps
-   - Example table template (commented out)
 
 ## Common Operations
 
@@ -174,7 +158,6 @@ psql postgresql://postgres:your_password@localhost:5432/app
 
 Data is persisted in local directories:
 
-- `.local/data`: Database files (PostgreSQL data directory)
 - `.local/backups`: Backup directory (mounted at `/backups` in container)
 
 These directories are created automatically and excluded from git via `.gitignore`.
