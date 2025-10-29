@@ -30,7 +30,7 @@ struct Cli {
     #[arg(help = "Output file (default: .env)")]
     output: String,
 
-    #[arg(short, long, default_value = "merge")]
+    #[arg(short, long, default_value = "update")]
     #[arg(help = "Processing strategy")]
     strategy: Strategy,
 

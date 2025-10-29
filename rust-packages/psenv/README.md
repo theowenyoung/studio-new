@@ -34,10 +34,9 @@ psenv --template .env.example --prefix "/studio-dev/" --output .env
 ### Optional Arguments
 
 - `--output` / `-o`: Output file (default: `.env`)
-- `--strategy` / `-s`: Processing strategy (default: `merge`)
-  - `merge`: Keep existing values, only add new ones
-  - `overwrite`: Overwrite existing values
-  - `replace`: Completely regenerate the file
+- `--strategy` / `-s`: Processing strategy (default: `update`)
+  - `update`: Update existing values and add new ones while preserving file format
+  - `overwrite`: Completely overwrite the file with only the fetched values
   - `error`: Error if output file exists
 - `--ignore-keys` / `-i`: Skip these keys (comma-separated, e.g., `DB_HOST,DEBUG`)
 - `--require-all`: All keys must exist in Parameter Store, otherwise error (default: false)
@@ -82,7 +81,7 @@ psenv -t .env.example -p "/myapp/prod/"
 psenv -t .env.example -p "/myapp/prod/" --dry-run
 ```
 
-### Overwrite existing values
+### Overwrite with clean configuration
 ```bash
 psenv -t .env.example -p "/myapp/prod/" -s overwrite
 ```
