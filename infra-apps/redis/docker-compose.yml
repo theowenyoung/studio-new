@@ -1,6 +1,6 @@
 services:
   redis:
-    image: redis:7.4-alpine
+    image: redis:8.2-alpine
     restart: unless-stopped
     env_file:
       - .env
@@ -19,7 +19,7 @@ services:
     networks:
       - shared
   redis-backup:
-    image: redis:7.4-alpine
+    image: redis:8.2-alpine
     restart: unless-stopped
     env_file:
       - .env
