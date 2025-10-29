@@ -29,6 +29,7 @@ test = 'pnpm --filter "./js-apps/*" test'
 "down:redis" = 'cd infra-apps/redis && docker compose down'
 "build:psenv" = 'cd rust-packages/psenv && cargo build --release'
 "env:postgres" = 'cd infra-apps/postgres && psenv -t .env.example -p "/studio-dev/" -o .env'
+"env:redis" = 'cd infra-apps/redis && psenv -t .env.example -p "/studio-dev/" -o .env'
 
 [tasks.init]
 depends = ["init:network"]
@@ -38,3 +39,6 @@ depends = ["up:postgres", "up:caddy", "up:redis"]
 
 [tasks.down]
 depends = ["down:postgres", "down:caddy", "down:redis"]
+
+[tasks.env]
+depends = ["env:postgres","env:redis"]
