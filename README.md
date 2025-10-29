@@ -28,6 +28,9 @@ mkcert -cert-file infra-apps/caddy/.local/certs/_wildcard.studio.localhost.pem \
        -key-file infra-apps/caddy/.local/certs/_wildcard.studio.localhost-key.pem \
        "*.studio.localhost"
 
+# 从远程同步 .env 文件
+mr env
+
 # 创建共享网络
 docker network create shared
 
