@@ -35,9 +35,14 @@ mr env
 docker network create shared
 
 # 启动 service，比如postgres, redis, caddy
-make up
+mise run up
+
+# 启动特定应用，或者全部应用
+
+mise run dev:hono
 
 # 启动所有应用
 make dev
+
 ```
 

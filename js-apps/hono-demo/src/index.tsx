@@ -2,9 +2,19 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { Page } from './pages/page'
 import { Top } from './pages/top'
+import { serveStatic } from '@hono/node-server/serve-static'
 
 const app = new Hono()
 
+app.use('/favicon.ico', serveStatic({ path: './public/favicon.ico' }))
+
+app.use(
+  '/static/*',
+  serveStatic({
+    root: './public/static',
+    rewriteRequestPath: (path) => path.replace(/^\/static/, ''),
+  })
+)
 // Model
 export type Post = {
   id: string

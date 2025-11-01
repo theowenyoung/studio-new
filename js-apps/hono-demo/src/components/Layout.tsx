@@ -22,6 +22,7 @@ export const Layout = (props: { title: string; children?: any }) => {
         <footer>
           <p>Built with <a href="https://github.com/honojs/hono">Hono</a></p>
         </footer>
+        <script type="module" src="/static/js/datastar.js"></script>
       </body>
     </html>`
 }
