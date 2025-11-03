@@ -1,5 +1,5 @@
 import { Layout } from '../components/Layout'
-import type { Post } from '../index'
+import type { Post } from '../db/posts'
 import type { Context } from 'hono'
 
 export const Page = (props: { post: Post; c: Context }) => {

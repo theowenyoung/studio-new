@@ -1,47 +1,171 @@
+// 首先加载环境变量
+import { config } from 'dotenv'
+config()
+
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { Page } from './pages/page'
 import { Top } from './pages/top'
+import { PostsManager } from './pages/posts-manager'
 import { serveStatic } from '@hono/node-server/serve-static'
 import { assetsMiddleware } from './middleware/assets'
+import { initDatabase, closeDatabase } from './db/postgres'
+import { connectRedis, closeRedis } from './db/redis'
+import {
+  getAllPosts,
+  getPostById,
+  createPost,
+  updatePost,
+  deletePost
+} from './db/posts'
+
+// 导出 Post 类型供其他模块使用
+export type { Post } from './db/posts'
 
 const app = new Hono()
 
 app.use('*', assetsMiddleware)
 
-// Model
-export type Post = {
-  id: string
-  title: string
-  body: string
-}
+// 页面路由
+app.get('/', async (c) => {
+  const posts = await getAllPosts()
+  return c.html(<PostsManager posts={posts} c={c} />)
+})
 
-const posts: Post[] = [
-  { id: '1', title: 'Good Morning', body: 'Let us eat breakfast' },
-  { id: '2', title: 'Good Afternoon', body: 'Let us eat Lunch' },
-  { id: '3', title: 'Good Evening', body: 'Let us eat Dinner' },
-  { id: '4', title: 'Good Night', body: 'Let us drink Beer' },
-  { id: '5', title: 'こんにちは', body: '昼からビールを飲みます' }
-]
-
-// Logic
-const getPosts = () => posts
-
-const getPost = (id: string) => {
-  return posts.find((post) => post.id == id)
-}
-
-// Controller
-app.get('/', (c) => {
-  const posts = getPosts()
+app.get('/posts', async (c) => {
+  const posts = await getAllPosts()
   return c.html(<Top posts={posts} c={c} />)
 })
 
-app.get('/post/:id{[0-9]+}', (c) => {
-  const id = c.req.param('id')
-  const post = getPost(id)
+app.get('/post/:id{[0-9]+}', async (c) => {
+  const id = parseInt(c.req.param('id'))
+  const post = await getPostById(id)
   if (!post) return c.notFound()
   return c.html(<Page post={post} c={c} />)
+})
+
+// API 路由 - 用于 Datastar 交互
+app.get('/api/posts', async (c) => {
+  try {
+    const posts = await getAllPosts()
+    return c.json(posts)
+  } catch (error) {
+    console.error('Error fetching posts:', error)
+    return c.json({ error: 'Failed to fetch posts' }, 500)
+  }
+})
+
+app.get('/api/posts/:id{[0-9]+}', async (c) => {
+  try {
+    const id = parseInt(c.req.param('id'))
+    const post = await getPostById(id)
+    if (!post) return c.json({ error: 'Post not found' }, 404)
+    return c.json(post)
+  } catch (error) {
+    console.error('Error fetching post:', error)
+    return c.json({ error: 'Failed to fetch post' }, 500)
+  }
+})
+
+app.post('/api/posts/:id{[0-9]+}', async (c) => {
+  try {
+    const id = parseInt(c.req.param('id'))
+    const body = await c.req.parseBody()
+
+    // 支持 _method 字段用于模拟 PUT/DELETE
+    const method = body._method as string
+
+    if (method === 'PUT') {
+      return handleUpdate(c, id, body)
+    } else if (method === 'DELETE') {
+      return handleDelete(c, id)
+    }
+
+    return c.json({ error: 'Invalid method' }, 400)
+  } catch (error) {
+    console.error('Error processing post:', error)
+    return c.json({ error: 'Failed to process post' }, 500)
+  }
+})
+
+app.post('/api/posts', async (c) => {
+  try {
+    const body = await c.req.parseBody()
+
+    const title = body.title as string
+    const postBody = body.body as string
+
+    if (!title || !postBody) {
+      return c.json({ error: 'Title and body are required' }, 400)
+    }
+
+    const post = await createPost(title, postBody)
+
+    // 重定向回首页以刷新列表
+    return c.redirect('/')
+  } catch (error) {
+    console.error('Error creating post:', error)
+    return c.json({ error: 'Failed to create post' }, 500)
+  }
+})
+
+// 辅助函数处理更新
+async function handleUpdate(c: any, id: number, body: any) {
+  const title = body.title as string
+  const postBody = body.body as string
+
+  if (!title || !postBody) {
+    return c.json({ error: 'Title and body are required' }, 400)
+  }
+
+  const post = await updatePost(id, title, postBody)
+  if (!post) return c.json({ error: 'Post not found' }, 404)
+
+  return c.redirect('/')
+}
+
+// 辅助函数处理删除
+async function handleDelete(c: any, id: number) {
+  const success = await deletePost(id)
+  if (!success) return c.json({ error: 'Post not found' }, 404)
+
+  return c.redirect('/')
+}
+
+app.put('/api/posts/:id{[0-9]+}', async (c) => {
+  try {
+    const id = parseInt(c.req.param('id'))
+    const body = await c.req.parseBody()
+    const title = body.title as string
+    const postBody = body.body as string
+
+    if (!title || !postBody) {
+      return c.json({ error: 'Title and body are required' }, 400)
+    }
+
+    const post = await updatePost(id, title, postBody)
+    if (!post) return c.json({ error: 'Post not found' }, 404)
+
+    // 重定向回首页以刷新列表
+    return c.redirect('/')
+  } catch (error) {
+    console.error('Error updating post:', error)
+    return c.json({ error: 'Failed to update post' }, 500)
+  }
+})
+
+app.delete('/api/posts/:id{[0-9]+}', async (c) => {
+  try {
+    const id = parseInt(c.req.param('id'))
+    const success = await deletePost(id)
+    if (!success) return c.json({ error: 'Post not found' }, 404)
+
+    // 重定向回首页以刷新列表
+    return c.redirect('/')
+  } catch (error) {
+    console.error('Error deleting post:', error)
+    return c.json({ error: 'Failed to delete post' }, 500)
+  }
 })
 
 // 静态文件服务（放在路由之后，作为兜底）
@@ -60,14 +184,49 @@ if (!isDev) {
 // 导出 app 供 Vite dev server 使用
 export default app
 
+// 初始化函数
+async function initialize() {
+  try {
+    console.log('Initializing database...')
+    await initDatabase()
+
+    console.log('Connecting to Redis...')
+    await connectRedis()
+
+    console.log('Initialization complete!')
+  } catch (error) {
+    console.error('Initialization failed:', error)
+    throw error
+  }
+}
+
+// 优雅关闭
+async function shutdown() {
+  console.log('Shutting down...')
+  await closeDatabase()
+  await closeRedis()
+  console.log('Shutdown complete')
+  process.exit(0)
+}
+
+process.on('SIGINT', shutdown)
+process.on('SIGTERM', shutdown)
+
 // 仅在非 Vite 环境下启动服务器（生产环境）
 if (process.env.NODE_ENV === 'production') {
   const { serve } = await import('@hono/node-server')
+
+  // 先初始化数据库
+  await initialize()
+
   serve({
     fetch: app.fetch,
     port: 3000
   }, (info) => {
     console.log(`Server is running on http://localhost:${info.port}`)
   })
+} else {
+  // 开发环境也需要初始化
+  await initialize()
 }
 

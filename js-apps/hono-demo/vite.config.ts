@@ -1,8 +1,10 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import devServer from '@hono/vite-dev-server'
 import path from 'node:path'
 
 export default defineConfig(({ mode }) => {
+  // 加载环境变量
+  const env = loadEnv(mode, process.cwd(), '')
   // 客户端生产构建
   if (mode === 'client') {
     return {
