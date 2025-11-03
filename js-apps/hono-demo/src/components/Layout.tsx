@@ -1,6 +1,11 @@
 import { html } from 'hono/html'
+import type { Context } from 'hono'
 
-export const Layout = (props: { title: string; children?: any }) => {
+export const Layout = (
+  props: { title: string; children?: any; c: Context }
+) => {
+  const datastarUrl = props.c.var.clientAsset('datastar.js')
+
   return html`<!DOCTYPE html>
     <html>
       <head>
@@ -22,7 +27,7 @@ export const Layout = (props: { title: string; children?: any }) => {
         <footer>
           <p>Built with <a href="https://github.com/honojs/hono">Hono</a></p>
         </footer>
-        <script type="module" src="/static/js/datastar.js"></script>
+        <script type="module" src="${datastarUrl}"></script>
       </body>
     </html>`
 }

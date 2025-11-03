@@ -1,5 +1,6 @@
 import { Layout } from '../components/Layout'
 import type { Post } from '../index'
+import type { Context } from 'hono'
 
 const List = (props: { post: Post }) => (
   <li>
@@ -7,9 +8,9 @@ const List = (props: { post: Post }) => (
   </li>
 )
 
-export const Top = (props: { posts: Post[] }) => {
+export const Top = (props: { posts: Post[]; c: Context }) => {
   return (
-    <Layout title={'Top'}>
+    <Layout title={'Top'} c={props.c}>
       <main>
         <h2>Posts</h2>
         <ul>

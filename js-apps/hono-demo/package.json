@@ -2,17 +2,21 @@
   "name": "hono-demo",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.tsx",
-    "build": "tsc",
-    "start": "node dist/index.jsx"
+    "dev": "vite",
+    "build:client": "vite build --mode client",
+    "build:server": "vite build --mode production",
+    "build": "pnpm build:client && pnpm build:server",
+    "start": "NODE_ENV=production node dist/server/index.js"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.5",
     "hono": "^4.10.3"
   },
   "devDependencies": {
+    "@hono/vite-dev-server": "^0.23.0",
     "@types/node": "^20.11.17",
     "tsx": "^4.7.1",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vite": "^5.4.14"
   }
 }
