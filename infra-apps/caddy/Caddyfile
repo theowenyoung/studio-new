@@ -36,3 +36,7 @@ storefront.studio.localhost {
     import local_tls
     reverse_proxy host.docker.internal:3002
 }
+hono.studio.localhost {
+    import local_tls
+    reverse_proxy host.docker.internal:8001
+}

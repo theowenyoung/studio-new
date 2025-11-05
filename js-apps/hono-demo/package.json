@@ -2,8 +2,7 @@
   "name": "hono-demo",
   "type": "module",
   "scripts": {
-    "dev": "node dev-with-env.js",
-    "dev:vite": "vite",
+    "dev": "vite --host --port 8001",
     "build:client": "vite build --mode client",
     "build:server": "vite build --mode production",
     "build": "pnpm build:client && pnpm build:server",
