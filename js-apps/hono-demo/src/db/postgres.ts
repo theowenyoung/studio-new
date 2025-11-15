@@ -1,5 +1,5 @@
 import { Pool } from 'pg'
-import { readFileSync } from 'fs'
+import runner from 'node-pg-migrate'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -11,70 +11,23 @@ export const pool = new Pool({
   connectionTimeoutMillis: 2000,
 })
 
-// 获取当前文件的目录（用于读取 migrations）
+// 获取当前文件的目录
 const __dirname = dirname(fileURLToPath(import.meta.url))
+const projectRoot = join(__dirname, '../..')
 
-// 创建 migrations 表来追踪已执行的迁移
-async function createMigrationsTable() {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS migrations (
-      id SERIAL PRIMARY KEY,
-      name VARCHAR(255) NOT NULL UNIQUE,
-      executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
-}
-
-// 执行单个迁移文件
-async function runMigration(name: string, sql: string) {
-  const client = await pool.connect()
-  try {
-    await client.query('BEGIN')
-
-    // 检查迁移是否已执行
-    const result = await client.query(
-      'SELECT 1 FROM migrations WHERE name = $1',
-      [name]
-    )
-
-    if (result.rows.length === 0) {
-      console.log(`Running migration: ${name}`)
-      await client.query(sql)
-      await client.query(
-        'INSERT INTO migrations (name) VALUES ($1)',
-        [name]
-      )
-      console.log(`✓ Migration ${name} completed`)
-    } else {
-      console.log(`⊘ Migration ${name} already executed`)
-    }
-
-    await client.query('COMMIT')
-  } catch (error) {
-    await client.query('ROLLBACK')
-    console.error(`✗ Migration ${name} failed:`, error)
-    throw error
-  } finally {
-    client.release()
-  }
-}
-
-// 运行所有迁移
+// 运行 migrations
 export async function runMigrations() {
   try {
-    await createMigrationsTable()
+    console.log('Running migrations...')
 
-    // 按顺序读取并执行迁移文件
-    const migrations = [
-      '001_create_posts_table.sql',
-      '002_seed_posts.sql',
-    ]
-
-    for (const migration of migrations) {
-      const migrationPath = join(__dirname, 'migrations', migration)
-      const sql = readFileSync(migrationPath, 'utf-8')
-      await runMigration(migration, sql)
-    }
+    await runner({
+      databaseUrl: process.env.DATABASE_URL,
+      dir: join(projectRoot, 'migrations'),
+      direction: 'up',
+      migrationsTable: 'pgmigrations',
+      verbose: true,
+      checkOrder: true,
+    })
 
     console.log('All migrations completed successfully')
   } catch (error) {

@@ -9,8 +9,23 @@
 - ✅ **类型安全**: 完整的 TypeScript 支持
 - ✅ **资源中间件**: 统一的资源路径管理
 - ✅ **可扩展**: 轻松添加更多客户端脚本
+- ✅ **数据库 Migrations**: 遵循最佳实践的数据库迁移系统
+- ✅ **Redis 缓存**: 集成 Redis 进行数据缓存
 
 ## 快速开始
+
+### 环境配置
+
+1. 复制环境变量配置文件：
+```bash
+cp .env.example .env
+```
+
+2. 修改 `.env` 文件，配置数据库连接：
+```env
+DATABASE_URL=postgresql://postgres:password@localhost:5432/postgres
+REDIS_URL=redis://default:password@localhost:6379
+```
 
 ### 开发环境
 
@@ -18,11 +33,12 @@
 pnpm dev
 ```
 
-访问 http://localhost:5173
+访问 http://localhost:8001
 
 - 修改服务端代码自动重启
 - 修改客户端代码支持 HMR（如果需要编译）
 - 静态资源直接服务，无需构建
+- 应用启动时自动运行数据库 migrations
 
 ### 生产环境
 
@@ -145,6 +161,50 @@ const asset = props.c.var.asset
 // 开发环境返回: /static/js/datastar.js
 // 生产环境返回: /assets/datastar-abc123.js
 asset('datastar.ts')
+```
+
+## 数据库管理
+
+本项目使用 [node-pg-migrate](https://salsita.github.io/node-pg-migrate/) 管理数据库 schema。详细文档请查看 [README-MIGRATIONS.md](./README-MIGRATIONS.md)。
+
+### 常用命令
+
+```bash
+# 运行所有 pending migrations
+pnpm migrate:up
+
+# 回滚最后一个 migration
+pnpm migrate:down
+
+# 创建新的 migration
+pnpm migrate:create add-users-table
+
+# 测试数据库连接
+pnpm test:db
+```
+
+### Migration 特性
+
+- ✅ 成熟的第三方工具（node-pg-migrate）
+- ✅ 支持 SQL 和 TypeScript/JavaScript
+- ✅ 支持 up/down migrations（回滚）
+- ✅ 事务支持，失败自动回滚
+- ✅ 应用启动时自动运行
+- ✅ Dry-run 模式预览
+- ✅ CLI 工具完善
+
+### 项目数据库结构
+
+```
+hono-demo/
+├── .node-pg-migrate.config.js          # Migration 配置
+├── migrations/                          # Migration 文件目录
+│   ├── 1730000001_create-posts-table.sql
+│   └── 1730000002_seed-posts.sql
+└── src/db/
+    ├── postgres.ts                      # 数据库连接池
+    ├── redis.ts                         # Redis 连接和缓存
+    └── posts.ts                         # Posts 数据操作
 ```
 
 ## 部署建议
