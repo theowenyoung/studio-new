@@ -5,14 +5,14 @@ Production-grade PostgreSQL setup for local development using Docker Compose.
 ## Features
 
 - PostgreSQL 18 Alpine (latest stable)
+- **Migrations System** - Run database migrations without restarting PostgreSQL
 - Production-grade performance configuration via `postgresql.conf`
+- Automatic database creation with read-write and read-only users
 - Minimal environment variables for easy management
 - Automatic health checks
-- Resource limits
+- Automatic daily backups with configurable retention
 - Data persistence with local volumes
 - Initialization scripts for extensions, roles, and schema
-- PgAdmin web interface for database management
-- Backup volume mount
 
 ## Quick Start
 
@@ -38,10 +38,15 @@ docker network create shared
 
 4. Start the services:
 ```bash
-docker compose up -d
+docker compose up -d postgres
 ```
 
-5. Verify the services are running:
+5. Run migrations (creates demo database and users):
+```bash
+./migrate.sh
+```
+
+6. Verify the services are running:
 ```bash
 docker compose ps
 ```
@@ -53,17 +58,39 @@ docker compose logs -f postgres
 
 ## Access
 
-### PostgreSQL Database
+### PostgreSQL Databases
 
+#### Root Access
 - **Host**: localhost
-- **Port**: 5432 (default, configurable via `POSTGRES_PORT`)
-- **Database**: app (default, configurable via `POSTGRES_DB`)
-- **Username**: postgres (default, configurable via `POSTGRES_USER`)
-- **Password**: Set in `.env` file
+- **Port**: 5432
+- **Database**: postgres
+- **Username**: postgres
+- **Password**: Set in `.env` as `POSTGRES_PASSWORD`
 
 Connection string:
 ```
-postgresql://postgres:your_password@localhost:5432/app
+postgresql://postgres:your_password@localhost:5432/postgres
+```
+
+#### Demo Database (created by migrations)
+- **Database**: demo
+- **Read-Write User**: demo_user (password: `POSTGRES_DEMO_USER_PASSWORD` in `.env`)
+  - Permissions: SELECT, INSERT, UPDATE, DELETE
+  - Connection limit: 50 connections
+- **Read-Only User**: demo_readonly_user (password: `POSTGRES_DEMO_READONLY_PASSWORD` in `.env`)
+  - Permissions: SELECT only
+  - Connection limit: 20 connections
+
+Connection examples:
+```bash
+# Read-write access
+psql postgresql://demo_user:your_password@localhost:5432/demo
+
+# Read-only access
+psql postgresql://demo_readonly_user:your_password@localhost:5432/demo
+
+# Using docker
+docker compose exec postgres psql -U demo_user -d demo
 ```
 
 ### Network Configuration
@@ -107,9 +134,77 @@ All PostgreSQL performance and behavior settings are managed in `postgresql.conf
 2. Restart the container: `docker compose restart postgres`
 3. Verify settings: `docker compose exec postgres psql -U postgres -d app -c "SHOW max_connections;"`
 
+## Migrations System
+
+### Overview
+
+This setup includes a powerful migrations system that allows you to add new databases, tables, and schema changes **without restarting PostgreSQL**.
+
+- **initdb.d/**: Scripts run ONCE on first database initialization
+- **migrations/**: Scripts run on-demand, tracked automatically
+- **No downtime**: Migrations run in a separate container
+
+### Running Migrations
+
+```bash
+# Run all pending migrations
+./migrate.sh
+
+# Check migration status
+./migrate.sh status
+
+# View help
+./migrate.sh help
+```
+
+### Adding New Migrations
+
+Create a new file in `migrations/` with a numeric prefix:
+
+**SQL Migration** (`migrations/002_create_users_table.sql`):
+```sql
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+**Shell Migration** (`migrations/003_create_new_db.sh`):
+```bash
+#!/bin/bash
+set -e
+source "/docker-entrypoint-initdb.d/000-functions.sh"
+
+create_database_with_users \
+  "myapp" \
+  "${POSTGRES_MYAPP_USER_PASSWORD}" \
+  "${POSTGRES_MYAPP_READONLY_PASSWORD}" \
+  "My Application Database"
+```
+
+Then run:
+```bash
+./migrate.sh up
+```
+
+### Migration Tracking
+
+Migrations are automatically tracked in the `schema_migrations` table:
+```bash
+# View migration history
+docker compose exec postgres psql -U postgres -d postgres -c \
+  "SELECT filename, executed_at, success FROM schema_migrations ORDER BY executed_at;"
+```
+
+For detailed documentation, see [migrations/README.md](./migrations/README.md).
+
 ## Initialization Scripts
 
 Scripts in `initdb.d/` run automatically on first startup:
+
+- `000-functions.sh`: Reusable functions for creating databases with users
+- `001-create-demo-db.sh`: Example (now moved to migrations)
 
 
 ## Common Operations

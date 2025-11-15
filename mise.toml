@@ -31,6 +31,11 @@ test = 'pnpm --filter "./js-apps/*" test'
 "build:psenv" = 'cd rust-packages/psenv && cargo build --release'
 "env:postgres" = 'cd infra-apps/postgres && psenv -t .env.example -p "/studio-dev/" -o .env'
 "env:redis" = 'cd infra-apps/redis && psenv -t .env.example -p "/studio-dev/" -o .env'
+"env:hono" = 'cd js-apps/hono-demo && psenv -t .env.example -p "/studio-dev/" -o .env'
+"env:backup" = 'cd infra-apps/backup && psenv -t .env.example -p "/studio-dev/" -o .env'
+"db:admin:migrations" = "cd infra-apps/db-admin && docker compose run --rm db-admin"
+"db" = "cd infra-apps/postgres && docker compose exec postgres psql -U postgres"
+
 
 [tasks.init]
 depends = ["init:network"]
@@ -38,8 +43,12 @@ depends = ["init:network"]
 [tasks.up]
 depends = ["up:postgres", "up:caddy", "up:redis"]
 
+[tasks."db:admin"]
+depends = ["db:admin:migrations"]
+
+
 [tasks.down]
 depends = ["down:postgres", "down:caddy", "down:redis"]
 
 [tasks.env]
-depends = ["env:postgres","env:redis"]
+depends = ["env:postgres","env:redis","env:hono","env:backup"]

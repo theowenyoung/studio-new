@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # ==========================================
 # PostgreSQL Database Setup Functions
 # ==========================================
@@ -33,17 +33,17 @@ create_database_with_users() {
   local description="${4:-$db_name database}"
 
   # Validate parameters
-  if [[ -z "$db_name" ]]; then
+  if [ -z "$db_name" ]; then
     log_error "Database name is required"
     return 1
   fi
 
-  if [[ -z "$rw_password" ]]; then
+  if [ -z "$rw_password" ]; then
     log_error "Read-write password is required"
     return 1
   fi
 
-  if [[ -z "$ro_password" ]]; then
+  if [ -z "$ro_password" ]; then
     log_error "Read-only password is required"
     return 1
   fi
@@ -81,26 +81,28 @@ _create_database() {
 
   log "Creating database..."
 
-  psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "postgres" <<-EOSQL
-        DO \$\$
-        BEGIN
-            IF NOT EXISTS (SELECT FROM pg_database WHERE datname = '$db_name') THEN
-                CREATE DATABASE $db_name
-                    WITH 
-                    OWNER = postgres
-                    ENCODING = 'UTF8'
-                    LC_COLLATE = 'en_US.utf8'
-                    LC_CTYPE = 'en_US.utf8'
-                    TEMPLATE = template0
-                    CONNECTION LIMIT = -1;
-                
-                EXECUTE format('COMMENT ON DATABASE %I IS %L', '$db_name', '$description');
-            END IF;
-        END
-        \$\$;
-EOSQL
+  # Check if database exists
+  local db_exists=$(psql -t --username "$POSTGRES_USER" --dbname "postgres" -c \
+    "SELECT 1 FROM pg_database WHERE datname = '$db_name';")
 
-  log_success "Database created"
+  if [ -z "$db_exists" ]; then
+    # Database doesn't exist, create it
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "postgres" <<-EOSQL
+        CREATE DATABASE $db_name
+            WITH
+            OWNER = postgres
+            ENCODING = 'UTF8'
+            LC_COLLATE = 'en_US.utf8'
+            LC_CTYPE = 'en_US.utf8'
+            TEMPLATE = template0
+            CONNECTION LIMIT = -1;
+
+        COMMENT ON DATABASE $db_name IS '$description';
+EOSQL
+    log_success "Database created"
+  else
+    log "Database $db_name already exists, skipping creation"
+  fi
 }
 
 _create_roles() {
@@ -108,12 +110,18 @@ _create_roles() {
 
   log "Creating roles..."
 
-  psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$db_name" <<-EOSQL
-        -- Install extensions
+  # Install extensions (continue on error for optional extensions)
+  psql --username "$POSTGRES_USER" --dbname "$db_name" <<-EOSQL
+        -- Install extensions (IF NOT EXISTS prevents errors if already installed)
 
-        CREATE EXTENSION IF NOT EXISTS "pg_ulid";
-
-        -- 这样使用: id TEXT PRIMARY KEY DEFAULT gen_ulid(),
+        -- ULID generation (optional, may not be available)
+        DO \$\$
+        BEGIN
+            CREATE EXTENSION IF NOT EXISTS "pg_ulid";
+        EXCEPTION WHEN OTHERS THEN
+            RAISE NOTICE 'pg_ulid extension not available, skipping';
+        END
+        \$\$;
 
         -- Advanced text search capabilities
         CREATE EXTENSION IF NOT EXISTS "pg_trgm";
@@ -226,7 +234,5 @@ EOSQL
   log_success "Security applied"
 }
 
-# Export functions (for bash < 4.4 compatibility)
-export -f create_database_with_users
-export -f log log_error log_success
-export -f _create_database _create_roles _create_users _apply_security
+# Note: Functions are available when this file is sourced
+# No need to export since we're sourcing in the same shell
