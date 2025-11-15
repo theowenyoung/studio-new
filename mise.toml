@@ -35,6 +35,8 @@ test = 'pnpm --filter "./js-apps/*" test'
 "env:backup" = 'cd infra-apps/backup && psenv -t .env.example -p "/studio-dev/" -o .env'
 "db:admin:migrations" = "cd infra-apps/db-admin && docker compose run --rm db-admin"
 "db" = "cd infra-apps/postgres && docker compose exec postgres psql -U postgres"
+"migrate" = 'pnpm --filter "./js-apps/*" migrate'
+"install" = 'pnpm --filter "./js-apps/*" install'
 
 
 [tasks.init]

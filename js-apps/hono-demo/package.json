@@ -8,8 +8,7 @@
     "build": "pnpm build:client && pnpm build:server",
     "start": "NODE_ENV=production node dist/server/index.js",
     "test:db": "tsx test-db.ts",
-    "migrate": "node-pg-migrate",
-    "migrate:up": "node-pg-migrate up",
+    "migrate": "node-pg-migrate up",
     "migrate:down": "node-pg-migrate down",
     "migrate:create": "node-pg-migrate create"
   },

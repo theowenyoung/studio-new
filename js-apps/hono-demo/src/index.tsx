@@ -9,7 +9,7 @@ import { Top } from './pages/top'
 import { PostsManager } from './pages/posts-manager'
 import { serveStatic } from '@hono/node-server/serve-static'
 import { assetsMiddleware } from './middleware/assets'
-import { initDatabase, closeDatabase } from './db/postgres'
+import { closeDatabase } from './db/postgres'
 import { connectRedis, closeRedis } from './db/redis'
 import {
   getAllPosts,
@@ -187,12 +187,9 @@ export default app
 // 初始化函数
 async function initialize() {
   try {
-    console.log('Initializing database...')
-    await initDatabase()
 
     console.log('Connecting to Redis...')
     await connectRedis()
-
     console.log('Initialization complete!')
   } catch (error) {
     console.error('Initialization failed:', error)
@@ -211,6 +208,7 @@ async function shutdown() {
 
 process.on('SIGINT', shutdown)
 process.on('SIGTERM', shutdown)
+console.log("process.env.NODE_ENV", process.env.NODE_ENV)
 
 // 仅在非 Vite 环境下启动服务器（生产环境）
 if (process.env.NODE_ENV === 'production') {
@@ -228,5 +226,7 @@ if (process.env.NODE_ENV === 'production') {
 } else {
   // 开发环境也需要初始化
   await initialize()
+  // 打印开发环境域名
+  console.log("Caddy", 'https://hono.studio.localhost')
 }
 
