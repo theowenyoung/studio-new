@@ -1,14 +1,8 @@
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig } from 'vite'
 import devServer from '@hono/vite-dev-server'
 import path from 'node:path'
-import { config } from 'dotenv'
-
-// 在配置加载前先加载 .env 文件到 process.env
-config()
 
 export default defineConfig(({ mode }) => {
-  // 加载环境变量
-  const env = loadEnv(mode, process.cwd(), '')
   // 客户端生产构建
   if (mode === 'client') {
     return {

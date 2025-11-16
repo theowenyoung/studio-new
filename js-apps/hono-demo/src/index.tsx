@@ -1,7 +1,3 @@
-// 首先加载环境变量
-import { config } from 'dotenv'
-config()
-
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { Page } from './pages/page'
@@ -229,9 +225,10 @@ if (process.env.NODE_ENV === 'production') {
   // 先初始化数据库
   await initialize()
 
+  const port = process.env.PORT ? parseInt(process.env.PORT) : 8001
   serve({
     fetch: app.fetch,
-    port: 8001
+    port
   }, (info) => {
     console.log(`Server is running on http://localhost:${info.port}`)
   })

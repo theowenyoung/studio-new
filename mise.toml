@@ -37,6 +37,7 @@ test = 'pnpm --filter "./js-apps/*" test'
 "db" = "cd infra-apps/postgres && docker compose exec postgres psql -U postgres"
 "migrate" = 'pnpm --filter "./js-apps/*" migrate'
 "install" = 'pnpm --filter "./js-apps/*" install'
+serve = 'pnpm --filter "./js-apps/*" start'
 
 
 [tasks.init]
