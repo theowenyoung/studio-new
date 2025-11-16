@@ -20,12 +20,12 @@ export const assetsMiddleware = createMiddleware(async (c, next) => {
   const isDev = process.env.NODE_ENV === 'development'
 
   c.set('clientAsset', (filename: string) => {
-    // 如果没有扩展名，默认添加 .js
+    // 如果没有扩展名，默认添加 .ts
     const fullFilename = filename.includes('.') ? filename : `${filename}.ts`
 
     if (isDev) {
-      // 开发环境：使用 ?raw 获取原始文件内容
-      return `/src/client/${fullFilename}?raw`
+      // 开发环境：通过 Vite 处理（用于需要编译的 TS 文件）
+      return `/src/client/${fullFilename}`
     }
 
     // 生产环境：从 manifest 获取构建后的路径

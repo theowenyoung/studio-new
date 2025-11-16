@@ -4,8 +4,6 @@ import type { Context } from 'hono'
 import { Layout } from '../components/Layout'
 
 export const PostsManager = (props: { posts: Post[]; c: Context }) => {
-  const datastarUrl = props.c.var.clientAsset('datastar.js')
-
   const postsListHtml = props.posts.length === 0
     ? '<p>No posts yet. Create one above!</p>'
     : props.posts
