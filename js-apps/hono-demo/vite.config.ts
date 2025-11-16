@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => {
           input: {
             "datastar.js": './src/client/datastar.js',
             example: './src/client/example.ts',
+            "index.css": './src/client/index.css',
           },
         },
       },

@@ -14,6 +14,10 @@ export const Layout = (
           rel="stylesheet"
           href="/static/css/mini-default.min.css"
         />
+        <link
+          rel="stylesheet"
+          href="${props.c.get('clientAsset')('index.css')}"
+        />
       </head>
       <body style="padding: 1em 2em">
         <header>
