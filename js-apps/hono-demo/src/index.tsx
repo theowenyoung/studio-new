@@ -198,12 +198,24 @@ async function initialize() {
 }
 
 // 优雅关闭
+let isShuttingDown = false
 async function shutdown() {
+  // 防止重复执行
+  if (isShuttingDown) {
+    return
+  }
+  isShuttingDown = true
+
   console.log('Shutting down...')
-  await closeDatabase()
-  await closeRedis()
-  console.log('Shutdown complete')
-  process.exit(0)
+  try {
+    await closeDatabase()
+    await closeRedis()
+    console.log('Shutdown complete')
+  } catch (error) {
+    console.error('Error during shutdown:', error)
+  } finally {
+    process.exit(0)
+  }
 }
 
 process.on('SIGINT', shutdown)
@@ -219,7 +231,7 @@ if (process.env.NODE_ENV === 'production') {
 
   serve({
     fetch: app.fetch,
-    port: 3000
+    port: 8001
   }, (info) => {
     console.log(`Server is running on http://localhost:${info.port}`)
   })

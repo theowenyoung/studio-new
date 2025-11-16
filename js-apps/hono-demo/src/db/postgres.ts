@@ -8,10 +8,10 @@ export const pool = new Pool({
   connectionTimeoutMillis: 2000,
 })
 
-
-
-
 // 优雅关闭连接池
 export async function closeDatabase() {
-  await pool.end()
+  // 检查 pool 是否已经关闭或正在关闭
+  if (!pool.ending && !pool.ended) {
+    await pool.end()
+  }
 }

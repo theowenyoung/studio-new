@@ -1,6 +1,7 @@
 import { html, raw } from 'hono/html'
 import type { Post } from '../db/posts'
 import type { Context } from 'hono'
+import { Layout } from '../components/Layout'
 
 export const PostsManager = (props: { posts: Post[]; c: Context }) => {
   const datastarUrl = props.c.var.clientAsset('datastar.js')
@@ -91,73 +92,53 @@ export const PostsManager = (props: { posts: Post[]; c: Context }) => {
         )
         .join('')
 
-  return html`<!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Posts Manager</title>
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css"
-        />
-      </head>
-      <body style="padding: 1em 2em">
-        <header>
-          <h1>
-            <a href="/">Hono Posts Manager</a>
-          </h1>
-          <nav>
-            <a href="/posts">Simple List</a>
-          </nav>
-        </header>
+  const content = html`
+    <nav style="margin-bottom: 1em;">
+      <a href="/posts">Simple List</a>
+    </nav>
 
-        <main data-store='{"editingId":null,"editTitle":"","editBody":"","newTitle":"","newBody":""}'>
-          <h2>Posts Manager with Datastar</h2>
+    <main data-store='{"editingId":null,"editTitle":"","editBody":"","newTitle":"","newBody":""}'>
+      <h2>Posts Manager with Datastar</h2>
 
-          <!-- 创建新 Post 表单 -->
-          <section style="margin-bottom: 2em; padding: 1em; border: 1px solid #ccc; border-radius: 4px;">
-            <h3>Create New Post</h3>
-            <form method="POST" action="/api/posts">
-              <div style="margin-bottom: 1em;">
-                <label>
-                  Title:
-                  <input
-                    type="text"
-                    name="title"
-                    required
-                    style="width: 100%; margin-top: 0.5em;"
-                  />
-                </label>
-              </div>
-              <div style="margin-bottom: 1em;">
-                <label>
-                  Body:
-                  <textarea
-                    name="body"
-                    required
-                    rows="4"
-                    style="width: 100%; margin-top: 0.5em;"
-                  ></textarea>
-                </label>
-              </div>
-              <button type="submit">Create Post</button>
-            </form>
-          </section>
+      <!-- 创建新 Post 表单 -->
+      <section style="margin-bottom: 2em; padding: 1em; border: 1px solid #ccc; border-radius: 4px;">
+        <h3>Create New Post</h3>
+        <form method="POST" action="/api/posts">
+          <div style="margin-bottom: 1em;">
+            <label>
+              Title:
+              <input
+                type="text"
+                name="title"
+                required
+                style="width: 100%; margin-top: 0.5em;"
+              />
+            </label>
+          </div>
+          <div style="margin-bottom: 1em;">
+            <label>
+              Body:
+              <textarea
+                name="body"
+                required
+                rows="4"
+                style="width: 100%; margin-top: 0.5em;"
+              ></textarea>
+            </label>
+          </div>
+          <button type="submit">Create Post</button>
+        </form>
+      </section>
 
-          <!-- Posts 列表 -->
-          <section id="posts-list">
-            <h3>All Posts</h3>
-            <div id="posts-container">
-              ${raw(postsListHtml)}
-            </div>
-          </section>
-        </main>
+      <!-- Posts 列表 -->
+      <section id="posts-list">
+        <h3>All Posts</h3>
+        <div id="posts-container">
+          ${raw(postsListHtml)}
+        </div>
+      </section>
+    </main>
+  `
 
-        <footer>
-          <p>Built with <a href="https://github.com/honojs/hono">Hono</a> and <a href="https://data-star.dev">Datastar</a></p>
-        </footer>
-        <script type="module" src="${datastarUrl}"></script>
-      </body>
-    </html>`
+  return Layout({ title: 'Posts Manager', children: content, c: props.c })
 }

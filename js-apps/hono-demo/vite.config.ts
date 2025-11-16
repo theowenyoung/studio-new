@@ -44,7 +44,10 @@ export default defineConfig(({ mode }) => {
     }
   }
 
-  // 服务端开发模式
+  if(mode==="development"){
+    console.log('🌐 Caddy URL: https://hono.studio.localhost')
+  }
+
   return {
     // 把已压缩的 .js 文件当作静态资源
     assetsInclude: ['**/*.js'],
