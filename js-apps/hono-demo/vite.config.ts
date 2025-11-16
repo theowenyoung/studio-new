@@ -19,7 +19,6 @@ export default defineConfig(({ mode }) => {
         rollupOptions: {
           // 手动列出所有客户端入口文件
           input: {
-            "datastar.js": './src/client/datastar.js',
             example: './src/client/example.ts',
             "index.css": './src/client/index.css',
           },
